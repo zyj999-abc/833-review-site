@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>833 纺织材料学 · 真题复习站</title>
+<meta name="description" content="东华大学 833 纺织材料学真题复习系统：间隔复习、错题重练、随机组卷、知识导图">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234da3ff'/%3E%3Ctext x='32' y='42' font-size='26' font-family='sans-serif' font-weight='700' fill='%23fff' text-anchor='middle'%3E833%3C/text%3E%3C/svg%3E">
+<link rel="shortcut icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0c111b">
+<link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">833</span>
+      <div class="brand-txt">
+        <b>纺织材料学 · 真题复习站</b>
+        <span id="brandSub">载入中…</span>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-v="review" class="on">今日复习<i id="bDue">0</i></button>
+      <button data-v="wrong">错题重练<i id="bWrong">0</i></button>
+      <button data-v="paper">随机组卷</button>
+      <button data-v="map">知识导图</button>
+      <button data-v="bank">题库</button>
+      <button data-v="stats">统计</button>
+      <button data-v="set">设置</button>
+    </nav>
+    <button class="icon-btn" id="themeBtn" title="切换深/浅色">◐</button>
+  </header>
+
+  <main>
+    <!-- ══ 复习 ══ -->
+    <section class="view on" id="v-review">
+      <div class="bar">
+        <div class="bar-l"><b id="rvTitle">今日复习</b><span class="hint" id="rvHint"></span></div>
+        <div class="bar-r">
+          <select id="rvType"><option value="">全部题型</option><option>名词解释</option><option>问答题</option><option>计算题</option></select>
+          <select id="rvYear"><option value="">全部年份</option></select>
+          <label class="switch"><input type="checkbox" id="rvStar"><span>★ 只看星标</span></label>
+          <label class="switch"><input type="checkbox" id="rvHighFirst" checked><span>高频优先</span></label>
+          <button class="btn ghost" id="rvShuffle">打乱</button>
+        </div>
+      </div>
+      <div class="bbar" id="backupBar" hidden>
+        <span id="backupTxt"></span>
+        <div class="bbar-r">
+          <button class="btn primary sm" id="backupNow">立即备份</button>
+          <button class="btn ghost sm" id="backupLater">7 天后再说</button>
+        </div>
+      </div>
+      <div class="tmrow" id="typeMastery" aria-label="分题型平均掌握度"></div>
+      <div class="todayring" id="todayRing"></div>
+      <div id="rvArea"></div>
+    </section>
+
+    <!-- ══ 组卷 ══ -->
+    <section class="view" id="v-paper">
+      <div class="card pad">
+        <h2>随机组卷 <small>按题型配额抽题（参考真题卷：名词 10×5 分 + 大题若干×15 分，总分 150）</small></h2>
+        <div class="grid3">
+          <div>
+            <label class="lab">年份范围</label>
+            <div class="years" id="paperYears"></div>
+          </div>
+          <div>
+            <label class="lab">题量配额</label>
+            <div class="quota">
+              <span>名词解释<input type="number" id="pq1" value="10" min="0" max="40"></span>
+              <span>问答题<input type="number" id="pq2" value="4" min="0" max="20"></span>
+              <span>计算题<input type="number" id="pq3" value="2" min="0" max="10"></span>
+            </div>
+            <label class="lab" style="margin-top:10px">每题分值 <small style="color:var(--muted)">真题卷：名词 5 分 · 大题 15 分左右</small></label>
+            <div class="quota">
+              <span>名词<input type="number" id="ps1" value="5"></span>
+              <span>问答<input type="number" id="ps2" value="15"></span>
+              <span>计算<input type="number" id="ps3" value="15"></span>
+            </div>
+          </div>
+          <div>
+            <label class="lab">考试设置</label>
+            <div class="quota">
+              <span>时长(分)<input type="number" id="pDur" value="180" min="10" max="300"></span>
+            </div>
+            <label class="chk"><input type="checkbox" id="pAvoid" checked> 优先抽未掌握题</label>
+            <label class="chk"><input type="checkbox" id="pGate"> 排除已掌握题（≥80%，池不足自动放宽）</label>
+            <label class="chk"><input type="checkbox" id="pHigh" checked> 按真题频次由高到低排列</label>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn primary" id="pMake">生成卷子</button>
+          <button class="btn ghost" id="pPrint" disabled>打印 / 导出 PDF</button>
+          <span class="hint" id="pMsg"></span>
+        </div>
+      </div>
+      <div id="paperArea"></div>
+      <div class="card pad" id="phistCard" style="display:none;margin-top:15px">
+        <h2>历史试卷 <small>点击重看卷面与报告，可重做自评</small></h2>
+        <div class="phist" id="phistList"></div>
+      </div>
+    </section>
+
+    <!-- ══ 导图 ══ -->
+    <section class="view" id="v-map">
+      <div class="bar">
+        <div class="bar-l"><b>知识导图</b><span class="hint">点击分支 → 要点 + 真题（含子分支）+ 教材原页</span></div>
+        <div class="bar-r">
+          <div class="mapctl">
+            <button id="mapOut" title="缩小">−</button><span id="mapZoomTxt">100%</span><button id="mapIn" title="放大">+</button><button id="mapFit" title="还原">适应</button>
+          </div>
+          <div id="mapTabs"></div>
+        </div>
+      </div>
+      <div class="mapwrap">
+        <div class="mapsvg" id="mapSvg"></div>
+        <aside class="drawer" id="mapDrawer">
+          <div class="drawer-empty">选择导图中的任一分支，查看要点与对应真题</div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ══ 题库 ══ -->
+    <section class="view" id="v-bank">
+      <div class="bar">
+        <div class="bar-l"><b>题库</b><span class="hint" id="bankCnt"></span></div>
+        <div class="bar-r">
+          <select id="bkYear"><option value="">全部年份</option></select>
+          <select id="bkType"><option value="">全部题型</option><option>名词解释</option><option>问答题</option><option>计算题</option></select>
+          <select id="bkSort"><option value="freq">按真题频次</option><option value="year">按年份</option><option value="type">按题型</option></select>
+          <label class="switch"><input type="checkbox" id="bkStar"><span>★ 星标</span></label>
+          <input id="bkKw" placeholder="搜索题干/答案…">
+        </div>
+      </div>
+      <div id="bankList" class="list"></div>
+    </section>
+
+    <!-- ══ 统计 ══ -->
+    <section class="view" id="v-stats"><div id="statArea"></div></section>
+
+    <!-- ══ 设置 ══ -->
+    <section class="view" id="v-set">
+      <div class="card pad">
+        <h2>复习设置</h2>
+        <div class="grid3">
+          <div>
+            <label class="lab">每日新题量</label>
+            <input type="number" id="setNew" min="0" max="100" value="20">
+            <label class="lab" style="margin-top:12px">复习 : 新题 比例</label>
+            <select id="setRatio">
+              <option value="1">1 : 1</option>
+              <option value="2">2 : 1</option>
+              <option value="3">3 : 1</option>
+              <option value="4">4 : 1</option>
+              <option value="0">只复习不学新题</option>
+            </select>
+          </div>
+          <div>
+            <label class="lab">队列顺序</label>
+            <select id="setOrder">
+              <option value="review">先复习后新题</option>
+              <option value="new">先新题后复习</option>
+              <option value="mix">交错混合</option>
+            </select>
+            <label class="lab" style="margin-top:12px">目标留存率</label>
+            <input type="number" id="setRet" step="0.05" min="0.7" max="0.98" value="0.9">
+          </div>
+          <div>
+            <label class="lab">错题连续判"清晰"几次后移出</label>
+            <input type="number" id="setClear" min="1" max="10" value="2">
+            <label class="lab" style="margin-top:12px">每日复习上限</label>
+            <input type="number" id="setRev" min="5" max="300" value="120">
+          </div>
+        </div>
+        <div class="row"><button class="btn primary" id="setSave">保存设置</button><span class="hint" id="setMsg"></span></div>
+      </div>
+      <div class="card pad">
+        <h2>教材原页 <small>真题旁的「课本 P×」直接打开教材原页，无需本机 PDF</small></h2>
+        <div class="row">
+          <button class="btn ghost" id="pdfTest">打开示例页</button>
+          <span class="hint" id="pgStat">已随站点打包真题引用的教材页（图片，离线可用）</span>
+        </div>
+        <p class="hint">页面预渲染为图片并带题目高亮；手机、平板与桌面浏览器均可用，方向键翻页。</p>
+      </div>
+      <div class="card pad">
+        <h2>数据 <small>进度保存在本机浏览器，建议绑定存档文件或定期导出</small></h2>
+        <div class="row">
+          <button class="btn primary" id="bindArchive" hidden>绑定存档文件（自动保存）</button>
+          <button class="btn ghost" id="expBtn">导出学习进度</button>
+          <label class="btn ghost file">导入进度<input type="file" id="impFile" accept="application/json" hidden></label>
+          <button class="btn ghost danger" id="resetBtn">清空全部进度</button>
+          <span class="hint" id="dataMsg"></span>
+        </div>
+        <p class="hint" id="archiveHint">桌面 Chrome/Edge 可绑定一个存档文件，每次学习后自动写入；手机请用「导出学习进度」定期备份。</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="modal"><div class="m-bg"></div><div class="m-box"><button class="m-x">×</button><div id="mBody"></div></div></div>
+
+<div class="viewer" id="viewer" aria-hidden="true">
+  <div class="v-bg"></div>
+  <div class="v-box" role="dialog" aria-label="教材原页">
+    <div class="v-top">
+      <b id="vTitle">教材</b>
+      <div class="v-nav">
+        <button class="btn ghost" id="vPrev" title="上一页">←</button>
+        <input id="vPage" type="number" inputmode="numeric" placeholder="印刷页">
+        <button class="btn ghost" id="vGo">跳转</button>
+        <button class="btn ghost" id="vNext" title="下一页">→</button>
+        <button class="btn ghost" id="vZoom">放大</button>
+        <button class="v-x" id="vClose" title="关闭">×</button>
+      </div>
+    </div>
+    <div class="v-body" id="vBody"><div class="v-imgwrap" id="vWrap"><img id="vImg" alt="教材原页"><div id="vHl"></div></div></div>
+    <div class="v-foot"><span class="hint" id="vHint"></span><span class="hint">方向键翻页 · Esc 关闭</span></div>
+  </div>
+</div>
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

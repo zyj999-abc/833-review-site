@@ -1,0 +1,15 @@
+{
+  "name": "833 纺织材料学 · 真题复习站",
+  "short_name": "833复习站",
+  "description": "东华大学 833 纺织材料学真题复习：间隔复习、错题重练、随机组卷、知识导图、教材原页",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0c111b",
+  "theme_color": "#0c111b",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
